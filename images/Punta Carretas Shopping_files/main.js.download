@@ -1,0 +1,379 @@
+
+
+
+
+
+/*var scroll = new LocomotiveScroll({
+     el: document.querySelector('[data-scroll-container]'),
+     smooth: true,
+     smartphone: {
+        smooth: true
+    },
+    tablet: {
+        smooth: true
+    }
+});*/
+var scroller=null;
+$(document).ready(function(){  
+
+    setTimeout(function(){
+        /*$('body').addClass('show');
+        scroller = new LocomotiveScroll({
+            el: document.querySelector("[data-scroll-container]"),
+            smooth: true,
+            smoothMobile: true
+
+        });
+        scroller.on("call", scrollInSection);
+        $('.loader:first').addClass('load end');*/
+
+    }, 1000);
+
+    /*Cursor*/
+    var cursor = {
+    delay: 8,
+    _x: 0,
+    _y: 0,
+    endX: (window.innerWidth / 2),
+    endY: (window.innerHeight / 2),
+    cursorVisible: true,
+    cursorEnlarged: false,
+    $dot: document.querySelector('.cursor-dot'),
+    $outline: document.querySelector('.cursor-dot-outline'),
+
+    init: function () {
+        // Set up element sizes
+        this.dotSize = this.$dot.offsetWidth;
+        this.outlineSize = this.$outline.offsetWidth;
+
+        this.setupEventListeners();
+        this.animateDotOutline();
+    },
+
+    setupEventListeners: function () {
+        var self = this;
+
+        // Anchor hovering
+        document.querySelectorAll('a').forEach(function (el) {
+            el.addEventListener('mouseover', function () {
+                self.cursorEnlarged = true;
+                self.toggleCursorSize();
+            });
+            el.addEventListener('mouseout', function () {
+                self.cursorEnlarged = false;
+                self.toggleCursorSize();
+            });
+        });
+
+        // Play Video News
+        document.querySelectorAll('.poster').forEach(function(el) {
+            el.addEventListener('mouseover', function() {
+                $('.cursor-dot-outline, .cursor-dot').addClass('play');
+            });
+            el.addEventListener('mouseout', function() {
+                $('.cursor-dot-outline, .cursor-dot').removeClass('play');
+            });
+        });
+
+        // Play Video Trailer
+        document.querySelectorAll('.poster_trailer').forEach(function(el) {
+            el.addEventListener('mouseover', function() {
+                $('.cursor-dot-outline, .cursor-dot').addClass('play_trailer');
+            });
+            el.addEventListener('mouseout', function() {
+                $('.cursor-dot-outline, .cursor-dot').removeClass('play_trailer');
+            });
+        });
+
+        // Click events
+        document.addEventListener('mousedown', function () {
+            self.cursorEnlarged = true;
+            self.toggleCursorSize();
+        });
+        document.addEventListener('mouseup', function () {
+            self.cursorEnlarged = false;
+            self.toggleCursorSize();
+        });
+
+
+        document.addEventListener('mousemove', function (e) {
+            // Show the cursor
+            self.cursorVisible = true;
+            self.toggleCursorVisibility();
+
+            self.endX = e.clientX;
+            self.endY = e.clientY;
+
+            self.$dot.style.top = self.endY + 'px';
+            self.$dot.style.left = self.endX + 'px';
+        });
+
+        // Hide/show cursor
+        document.addEventListener('mouseenter', function (e) {
+            self.cursorVisible = true;
+            self.toggleCursorVisibility();
+            self.$dot.style.opacity = 1;
+            self.$outline.style.opacity = 1;
+        });
+
+        document.addEventListener('mouseleave', function (e) {
+            self.cursorVisible = true;
+            self.toggleCursorVisibility();
+            self.$dot.style.opacity = 0;
+            self.$outline.style.opacity = 0;
+        });
+    },
+
+    animateDotOutline: function () {
+        var self = this;
+
+        self._x += (self.endX - self._x) / self.delay;
+        self._y += (self.endY - self._y) / self.delay;
+        self.$outline.style.top = self._y + 'px';
+        self.$outline.style.left = self._x + 'px';
+
+        requestAnimationFrame(this.animateDotOutline.bind(self));
+    },
+
+    toggleCursorSize: function () {
+        var self = this;
+
+        if (self.cursorEnlarged) {
+            self.$dot.style.transform = 'translate(-50%, -50%) scale(0)';
+            self.$outline.style.transform = 'translate(-50%, -50%) scale(1.1)';
+            self.$outline.style.background = 'rgba(216, 35, 42, 0.2)';
+            self.$outline.style.border = 'none';
+        } else {
+            self.$dot.style.transform = 'translate(-50%, -50%) scale(1)';
+            self.$outline.style.transform = 'translate(-50%, -50%) scale(1)';
+            self.$outline.style.background = 'rgba(216, 35, 42, 0)';
+            self.$outline.style.border = 'none';
+        }
+    },
+
+    toggleCursorVisibility: function () {
+        var self = this;
+
+        if (self.cursorVisible) {
+            self.$dot.style.opacity = 1;
+            self.$outline.style.opacity = 1;
+        } else {
+            self.$dot.style.opacity = 0;
+            self.$outline.style.opacity = 0;
+        }
+    }
+};
+
+cursor.init();
+
+//scroller.on("call", scrollInSection);
+
+});
+
+/*Loader Animation Words*/
+setInterval(function()
+{
+    // Remove .active class from the active li, select next li sibling.
+    var next = $('.content_animations span.active').removeClass('active').next('span');
+
+    // Did we reach the last element? Of so: select first sibling
+    if (!next.length) next = next.prevObject.siblings(':first');
+
+    // Add .active class to the li next in line.
+    next.addClass('active');
+}, 500);
+
+
+
+/*Active Class Navigation*/
+const scrollInSection = function (obj, action) {
+  const bodyClass = "active"
+ 
+  if (obj == "news_call") {
+    if(action == "enter"){
+      document.querySelector(".content_navigation").classList.add(bodyClass)
+      document.querySelector(".content_whatsapp").classList.add(bodyClass)
+      document.querySelector(".btn_menu").classList.add(bodyClass)
+    }else{
+      document.querySelector(".content_navigation").classList.remove(bodyClass)
+      document.querySelector(".content_whatsapp").classList.remove(bodyClass)
+      document.querySelector(".btn_menu").classList.remove(bodyClass)
+    } 
+  }
+}
+
+
+/*Open Close Menu*/
+$('.btn_menu').click(function(e) {
+    e.preventDefault();
+    if($('.btn_menu, .content_menu').hasClass('open_menu')){
+        $('.btn_menu, .content_menu').removeClass('open_menu');
+    }
+    else{
+        $('.btn_menu, .content_menu').addClass('open_menu');
+    }          
+});
+
+/*Menu Hover*/
+/*PETFRIENDLY
+$('.store, .programs, .services_menu').hover(
+    function(){ $('.content_menu, .btn_menu').addClass('option_1') },
+    function(){ $('.content_menu, .btn_menu').removeClass('option_1') }
+)
+
+$('.news, .movie, .aboutus').hover(
+    function(){ $('.content_menu, .btn_menu').addClass('option_2') },
+    function(){ $('.content_menu, .btn_menu').removeClass('option_2') }
+)
+
+$('.init, .gifts, .contact, .pet_friendly').hover(
+    function(){ $('.content_menu').addClass('option_3') },
+    function(){ $('.content_menu').removeClass('option_3') }
+)*/
+
+$('.store, .programs, .aboutus').hover(
+    function(){ $('.content_menu, .btn_menu').addClass('option_1') },
+    function(){ $('.content_menu, .btn_menu').removeClass('option_1') }
+)
+
+$('.news, .movie, .contact').hover(
+    function(){ $('.content_menu, .btn_menu').addClass('option_2') },
+    function(){ $('.content_menu, .btn_menu').removeClass('option_2') }
+)
+
+$('.init, .gifts, .services_menu').hover(
+    function(){ $('.content_menu').addClass('option_3') },
+    function(){ $('.content_menu').removeClass('option_3') }
+)
+
+/*Open Newsletter*/
+$('.open_newsletter').click(function(e) {
+    e.preventDefault();
+    $("#newsletterModal").removeClass('success')
+    $('.content_newsletter').addClass('active');          
+});
+
+/*Close Newsletter*/
+$('.btn_close_newsletter').click(function(e) {
+    e.preventDefault();
+    $('.content_newsletter').removeClass('active');          
+});
+
+/*Grid Store Button*/
+$('.btn_grid_col').click(function(e) {
+    e.preventDefault();
+    if($('.content_list').hasClass('row_list')){
+        $('.content_list').removeClass('row_list');
+    } 
+    if($('.btn_grid_row').hasClass('active')){
+        $('.btn_grid_row').removeClass('active');
+    }  
+    $('.btn_grid_col').addClass('active');       
+});
+
+$('.btn_grid_row').click(function(e) {
+    e.preventDefault();
+    $('.content_list').addClass('row_list');
+    $('.btn_grid_col').removeClass('active');
+    $('.btn_grid_row').addClass('active');    
+});
+
+/*Play Video*/
+$('.poster').click(function(e) {
+    e.preventDefault();
+    $(this).parent().parent().addClass('hide');
+    $(this).parent().find('.videoItem:first')[0].src += "&autoplay=1";
+});
+
+/*Play Video Trailer*/
+$('.poster_trailer').click(function(e) {
+    e.preventDefault();
+    let _videoWrapper =  $(this).parent().parent();
+    _videoWrapper.addClass('hide')
+    _videoWrapper.find('.videoItem:first')[0].src += "&autoplay=1";
+});
+
+
+/*Tab Life*/
+$('.tab_life').click(function(e) {
+    e.preventDefault();
+    if($('.content_group, .content_movie').hasClass('active')){
+        $('.content_group, .content_movie').removeClass('active');
+    }
+    $('.content_life').addClass('active');
+    $('.tab_group, .tab_movie').parent().removeClass('active');
+    $(this).parent().addClass('active');         
+});
+
+/*Tab Group*/
+$('.tab_group').click(function(e) {
+    e.preventDefault();
+    if($('.content_movie, .content_life').hasClass('active')){
+        $('.content_movie, .content_life').removeClass('active');
+    }
+    $('.content_group').addClass('active');
+    $('.tab_movie, .tab_life').parent().removeClass('active');
+    $(this).parent().addClass('active');         
+});
+
+/*Tab Movie*/
+$('.tab_movie').click(function(e) {
+    e.preventDefault();
+    if($('.content_group, .content_life').hasClass('active')){
+        $('.content_group, .content_life').removeClass('active');
+    }
+    $('.content_movie').addClass('active');
+    $('.tab_group, .tab_life').parent().removeClass('active');
+    $(this).parent().addClass('active');         
+});
+
+
+/*Tab Life Mobile*/
+$('.tab_life_mobile').click(function(e) {
+    e.preventDefault();
+    if($('.content_group, .content_movie').hasClass('active')){
+        $('.content_group, .content_movie').removeClass('active');
+    }
+    $('.content_life').addClass('active');
+    $('.tab_group_mobile, .tab_movie_mobile').parent().removeClass('active');
+    $(this).parent().addClass('active');         
+});
+
+/*Tab Group Mobile*/
+$('.tab_group_mobile').click(function(e) {
+    e.preventDefault();
+    if($('.content_movie, .content_life').hasClass('active')){
+        $('.content_movie, .content_life').removeClass('active');
+    }
+    $('.content_group').addClass('active');
+    $('.tab_movie_mobile, .tab_life_mobile').parent().removeClass('active');
+    $(this).parent().addClass('active');         
+});
+
+/*Tab Movie Mobile*/
+$('.tab_movie_mobile').click(function(e) {
+    e.preventDefault();
+    if($('.content_group, .content_life').hasClass('active')){
+        $('.content_group, .content_life').removeClass('active');
+    }
+    $('.content_movie').addClass('active');
+    $('.tab_group_mobile, .tab_life_mobile').parent().removeClass('active');
+    $(this).parent().addClass('active');         
+});
+
+/*SERVICES ACCORDEON*/
+$('.btn_open_close').click(function(e) {
+    e.preventDefault();
+    if($(this).parent().hasClass('show')){
+        $(this).parent().removeClass('show');
+    }
+    else{
+        $(this).parent().addClass('show');
+    }
+    setTimeout(function(){
+        scroller.update();
+    }, 1000);
+
+});
+
+

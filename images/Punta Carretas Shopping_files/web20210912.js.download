@@ -1,0 +1,637 @@
+function startLoadItems(webLoadAssets) {
+    var loadItems = [];
+    var imagesList = [];
+    var videoList = [];
+
+    var $loaderLine = $('#loaderLine');
+    var $loaderProg = $('#loaderProg');
+    if (webLoadAssets !== "") {
+        loadItems = JSON.parse(webLoadAssets);
+        let _total = loadItems.length;
+        let totalItems = loadItems.length;
+
+        let imgIndex = 0;
+        let videoIndex = 0;
+        if (loadItems.length > 0) {
+            for (let i in loadItems) {
+                switch (loadItems[i].t) {
+                    case 'i':
+                        imagesList[imgIndex] = new Image();
+                        imagesList[imgIndex].onload = function () {
+                            _total--;
+                            updateLoaded(_total, totalItems);
+                            if (_total == 0) {
+                                startPage();
+                            }
+                        }
+                        imagesList[imgIndex].onerror = function () {
+                            _total--;
+                            updateLoaded(_total, totalItems);
+                            if (_total == 0) {
+                                startPage();
+                            }
+                        }
+                        imagesList[imgIndex].src = loadItems[i].u;
+                        imgIndex++;
+                        break;
+                    case 'v':
+                        videoList[videoIndex] = document.createElement("video");
+                        videoList[videoIndex].onloadeddata = function () {
+                            _total--;
+                            updateLoaded(_total, totalItems);
+                            if (_total == 0) {
+                                startPage();
+                            }
+                        }
+                        videoList[videoIndex].onerror = function () {
+                            console.log('error');
+                            _total--;
+                            updateLoaded(_total, totalItems);
+                            if (_total == 0) {
+                                startPage();
+                            }
+                        }
+                        videoList[videoIndex].autoplay = true;
+                        videoList[videoIndex].setAttribute("muted", true)
+                        videoList[videoIndex].setAttribute("playsinline", true)
+                        var sourceMP4 = document.createElement("source");
+                        sourceMP4.type = "video/mp4";
+                        sourceMP4.src = loadItems[i].u;
+                        videoList[videoIndex].appendChild(sourceMP4);
+                        /*if (/iPad|iPhone|iPod/.test(navigator.userAgent)){
+                            videoList[videoIndex].autoplay = true;
+                        }*/
+                        //videoList[videoIndex].load()
+                        //document.querySelector('body').appendChild(videoList[videoIndex]);
+                        videoIndex++;
+                        break;
+                }
+            }
+        } else {
+            $loaderLine.css({'width': "250px"});
+            $loaderProg.text("100");
+            startPage();
+        }
+
+    } else {
+        startPage();
+    }
+
+    function updateLoaded(_loaded, _total) {
+        let loadPercent = 100 - (_loaded * 100 / _total);
+        let pLoaded = (loadPercent * 250 / 100);
+        $loaderLine.css({'width': pLoaded+"px"});
+        $loaderProg.text(Math.round(loadPercent));
+
+
+    }
+
+
+    function startPage() {
+        let $webloader = $('#webloader');
+        $webloader.addClass('load');
+        if($('body').attr('class').split(" ")[0] == 'about_us'){
+            $(".content_loading").addClass("load");
+            scroller = new LocomotiveScroll({
+                el: document.querySelector('[data-scroll-container]'),
+                smooth: true,
+                direction: "horizontal",
+                smartphone: {
+                    smooth: true,
+                    direction: "vertical",
+                },
+                tablet: { smooth: true }
+            });
+        }else{
+            startVerticalLocomotive();
+        }
+        if($webloader.hasClass('internal_sections')){
+            $webloader.addClass('end');
+            setTimeout(function () {
+                $('body:first').addClass('show');
+                switch(window.location.hash){
+                    case '#como-llegar':
+                        scroller.scrollTo("#bus");
+                        window.location.hash='';
+                        break;
+                    case '#ver-horarios':
+                        scroller.scrollTo("#horarios");
+                        window.location.hash='';
+                        break;
+                }
+            }, 1000);
+        }else{
+            setTimeout(function () {
+                $webloader.addClass('end');
+                setTimeout(function () {
+                    $('body:first').addClass('show');
+                }, 1000);
+            }, 2000);
+        }
+
+    }
+
+
+    function initNewsDetails() {
+        $('#btnSuscribe').on('click', function(){
+            const target = document.querySelector('#open_newsletter');
+            scroller.scrollTo(target);
+            $('.content_newsletter').addClass('active');
+        });
+    };
+    function initNewsList() {
+        var $items = [];
+
+        var $newsitemsList = $('#newsitemsList');
+        $('.newsitem', $newsitemsList).each(function(){
+            $items.push($(this).clone());
+        });
+        var $filterBtns = $('#filterBtns');
+        var clsActives = [];
+        $('.filterItem', $filterBtns).on('click', function () {
+            var type = $(this).attr('data-type');
+            if(type == ''){
+                if ($(this).hasClass('active')) {
+                    return;
+                } else{
+                    $('.filterItem.active', $filterBtns).removeClass('active');
+                    $(this).addClass('active');
+                }
+            }else{
+                if($(this).hasClass('active')){
+                    $(this).removeClass('active');
+                }else {
+                    $('.filterItem:first', $filterBtns).removeClass('active');
+                    $(this).addClass('active');
+
+                }
+            };
+            clsActives=[];
+            $('.filterItem.active', $filterBtns).each(function (){
+                if($(this).attr('data-type') != ""){
+                    clsActives.push($(this).attr('data-type'));
+                }
+            });
+            $newsitemsList.html("");
+            if(clsActives.length > 0){
+                for(let i=0; i<$items.length; i++){
+                    if(clsActives.indexOf($items[i].attr('data-key')) >=0){
+                        $items[i].appendTo($newsitemsList);
+                    }
+                };
+            }else{
+                $('.filterItem:first', $filterBtns).addClass('active');
+                for(let i=0; i<$items.length; i++){
+                    $items[i].appendTo($newsitemsList);
+                }
+            };
+            scroller.update();
+        });
+    };
+    function initHome(){};
+    function initStorelist(){
+        let currentPage = 1;
+        $('#btnSearch, #btnNameSearch').on('click', storeSearch);
+        $('#storeNameFilter').on('keyup', function(e){
+            if(e.keyCode == 13){
+                storeSearch(e);
+            }
+        });
+        function storeSearch(e){
+            e.preventDefault();
+            let catUri = $('#categoryFilter').val();
+            let storeName = $('#storeNameFilter').val();
+            let path = 'tiendas/';
+            if(catUri !== ""){
+                path += catUri+"/";
+            }
+            if(storeName !== ""){
+                path += '?s='+storeName;
+            }
+            window.location.href = webPath + path;
+        };
+
+        let $loadMoreBtn = $('#loadMoreBtn');
+        if($loadMoreBtn.length > 0){
+            let loading = false;
+            let totalPages = parseInt($loadMoreBtn.attr('data-pages'), 10);
+            let idcategory = $loadMoreBtn.attr('data-category');
+            let search = $loadMoreBtn.attr('data-search');
+            $loadMoreBtn.on('click', function(e){
+                e.preventDefault();
+                if(loading){ return ;}
+                currentPage++;
+                $.ajax({
+                    type: "POST",
+                    url: webPath + 'api/web/storelist/',
+                    data: {
+                        page: currentPage,
+                        idcategory: idcategory,
+                        search: search
+                    },
+                    dataType: "json",
+                    beforeSend: function () {
+                        loading = true;
+                        $('span:first',$loadMoreBtn).text('Cargando');
+                    },
+                    success: function (json) {
+                        if (json.status) {
+                            $("#storeList").append(json.html);
+                            if(currentPage >= totalPages){
+                                $loadMoreBtn.hide();
+                            }else{
+                                $('span:first',$loadMoreBtn).text('Cargar más');
+                                loading = false;
+                            }
+                            setTimeout(function(){
+                                scroller.update();
+                            }, 300);
+
+                        } else {
+                            $('span:first',$loadMoreBtn).text('Reintentar');
+                            loading = false;
+                        }
+                    }, error: function () {
+                        $('span:first',$loadMoreBtn).text('Reintentar');
+                        loading = false;
+                    }
+                });
+            });
+        }
+
+    };
+    function initServices(){
+        $('.btnScroll').on('click', function(e){
+            e.preventDefault();
+            scroller.scrollTo($(this).attr('data-url'));
+        });
+    }
+    function initSearch(){
+        var $searchBox = $('#searchBoxMod');
+        $searchBox.on('keyup', function(e){
+            if(e.keyCode == 13){
+                if($searchBox.val() != "" && $searchBox.val().length >= 3){
+                    window.location.href=webPath+"buscar/?s="+$searchBox.val();
+                }
+            }
+        });
+        $('#btnSearch').on('click', function(){
+            if($searchBox.val() != "" && $searchBox.val().length >= 3){
+                window.location.href=webPath+"buscar/?s="+$searchBox.val();
+            }
+        });
+    };
+
+    function initContact(){
+        var contactSending = false;
+        var $contactForm = $('#contactForm');
+        //$('#btnSubmit').on('click', sendContactInfo);
+        $('#btnSubmitMobile').on('click', sendContactInfo);
+        $('#btnResetForm').on('click', resetForm);
+
+        function resetForm(){
+            $('#contactName').val("");
+            $('#contactLastname').val("");
+            $('#contactMessage').val("");
+            $('#contactPhone').val("");
+            $('#contactEmail').val("");
+            $('#contactIssue').val("");
+            $('#btnSubmitMobile span:first').text("Enviar");
+            //$('#btnSubmit span:first').text("ENVIAR");
+            $('.warning', $contactForm).removeClass('warning');
+            $('#contactForm').removeClass('success');
+        }
+
+        function sendContactInfo(){
+            if(contactSending){ return; }
+
+            var data = {
+                contactName :$('#contactName').val(),
+                contactMessage :$('#contactMessage').val(),
+                contactPhone :$('#contactPhone').val(),
+                contactEmail :$('#contactEmail').val(),
+                contactIssue :$('#contactIssue').val(),
+                recaptcha: $('#g-recaptcha-response').val()
+            };
+            if(typeof(grecaptcha) != "undefined"){
+                reloadRecaptcha(function(){
+                    data.recaptcha = $('#g-recaptcha-response').val();
+                    sendContactInfoFrm (data)
+                });
+            }else{
+                sendContactInfoFrm (data);
+            }
+        }
+
+        function sendContactInfoFrm (data){
+            $.ajax({
+                type: "POST",
+                url: webPath + 'api/web/sendContactInfo/',
+                data: data,
+                dataType: "json",
+                beforeSend: function () {
+                    contactSending = true;
+                    $('.warning',$contactForm).removeClass('warning');
+                    $('#btnSubmitMobile span:first').text("ENVIANDO");
+                    //$('#btnSubmit span:first').text("ENVIANDO");
+                },
+                success: function (json) {
+                    contactSending = false;
+                    if (json.status) {
+                        $contactForm.addClass('success');
+                        //('#msgSuccess').html(json.msg);
+                    } else {
+                        if (typeof (json.nodes) != "undefined") {
+                            if (json.nodes.length > 0) {
+                                for (var i = 0; i < json.nodes.length; i++) {
+                                    $(json.nodes[i]).parents('.row:first').addClass('warning');
+                                }
+                            }
+                        }
+                        $('#btnSubmitMobile span:first').text("REINTENTAR");
+                        //$('#btnSubmit span:first').text("REINTENTAR");
+                    }
+                }, error: function () {
+                    contactSending =false;
+                    $('#btnSubmitMobile span:first').text("ERROR");
+                    //$('#btnSubmit span:first').text("ERROR");
+                }
+            });
+        }
+
+
+    }
+    function initMovieList(){
+        let _movFilter = {
+            'cat': '',
+            'theater' : []
+        };
+
+        if(typeof(catfilter != "undefined") && catfilter != ""){
+            let categoryFilter = JSON.parse(catfilter);
+            let $categoryFilterItem = $('#categoryFilterItem');
+            let $filterLblList = $('#filterLblList');
+            for(let i in categoryFilter){
+                $('<option />').val(categoryFilter[i].uri)
+                    .text(categoryFilter[i].name)
+                    .appendTo($categoryFilterItem);
+            }
+            $categoryFilterItem.on('change', function(){
+                _movFilter.cat = $(this).val();
+                movieListFilter(_movFilter);
+            });
+
+            $('li', $filterLblList).on('click', function(){
+                if($(this).attr('data-id') == ''){
+                    _movFilter.theater = []
+                    $('.active', $filterLblList).removeClass('active');
+                    $(this).addClass('active');
+                }else {
+                    if($(this).hasClass('active')){
+                        $(this).removeClass('active');
+                        if($('li.active', $filterLblList).length < 1){
+                            $('li:first', $filterLblList).addClass('active');
+                        }
+                    }else{
+                        $(this).addClass('active');
+                        $('li:first', $filterLblList).removeClass('active');
+                    }
+                    _movFilter.theater = [];
+                    $('li.active', $filterLblList).each(function(){
+                        _movFilter.theater.push($(this).attr('data-id'));
+                    });
+                }
+                movieListFilter(_movFilter);
+            });
+        }
+    }
+
+    function initLottery(){
+        var lotterySending = false;
+        var $lotteryForm = $('#lotteryFrm');
+
+        $('#btnSend').on('click', function(){
+            if(lotterySending){ return; }
+            let data = {
+                recaptcha: $('#g-recaptcha-response').val(),
+                lotteryFrmItems : {},
+                idLottery: $('#idLottery').val(),
+                uriLottery: $('#uriLottery').val()
+            };
+
+            $('.frmitem', $lotteryForm).each(function(){
+                switch($(this).attr('data-type')){
+                    case 'l':
+                        let _n =  $(this).find('input:first');
+                        data.lotteryFrmItems[_n.attr('name')] = _n.val();
+                        break;
+                    case 't':
+                        let _t =  $(this).find('textarea:first');
+                        data.lotteryFrmItems[_t.attr('name')] = _t.val();
+                        break;
+                    case 's':
+                        let _s =  $(this).find('select:first');
+                        data.lotteryFrmItems[_s.attr('name')] = _s.val();
+                        break;
+                    case 'c':
+                        $(this).find('input').each(function(){
+                            if($(this).is(':checked')){
+                                if(typeof(data.lotteryFrmItems[$(this).attr('name')]) == "undefined"){
+                                    data.lotteryFrmItems[$(this).attr('name')] = [];
+                                }
+                                data.lotteryFrmItems[$(this).attr('name')].push($(this).val());
+                            }
+                        });
+                        break;
+                    case 'r':
+                        let _r = $(this).find('input:checked:first');
+                        if(_r.length > 0){
+                            data.lotteryFrmItems[_r.attr('name')] = _r.val();
+
+                        }
+
+                        break;
+                }
+            });
+
+            if(typeof(grecaptcha) != "undefined"){
+                reloadRecaptcha(function(){
+                    data.recaptcha = $('#g-recaptcha-response').val();
+                    sendLotteryInfoFrm (data)
+                });
+            }else{
+                sendLotteryInfoFrm (data);
+            }
+        });
+
+        function sendLotteryInfoFrm (data){
+            $.ajax({
+                type: "POST",
+                url: webPath + 'api/web/sendLotteryInfo/',
+                data: data,
+                dataType: "json",
+                beforeSend: function () {
+                    lotterySending = true;
+                    $('.warning', $lotteryForm).removeClass('warning');
+                    $('#btnSend span:first').text("ENVIANDO");
+                },
+                success: function (json) {
+                    lotterySending = false;
+                    if (json.status) {
+                        $lotteryForm.addClass('success');
+                    } else {
+
+                        if (typeof (json.nodes) != "undefined") {
+                            if (json.nodes.length > 0) {
+                                for (var i = 0; i < json.nodes.length; i++) {
+                                    $(json.nodes[i]).addClass('warning');
+                                }
+                            }
+                        }
+                        $('#btnSend span:first').text("REINTENTAR");
+                    }
+                }, error: function () {
+                    lotterySending =false;
+                    $('#btnSend span:first').text("ERROR");
+                }
+            });
+        }
+
+    }
+
+    function movieListFilter(f){
+        $('#movieList .movItem').each(function(){
+            if(f.cat !== ""){
+                if($(this).find('.gender li.'+f.cat).length == 0){
+                    $(this).hide();
+                    return;
+                }
+            }
+            if(f.theater.length > 0){
+                let hasClass = false;
+                for(let i in f.theater){
+                    if($(this).attr('class').indexOf(f.theater[i]) >= 0){
+                        hasClass = true;
+                    }
+                }
+                if(!hasClass){
+                    $(this).hide();
+                    return;
+                }
+            }
+
+            $(this).show();
+        });
+        scroller.update();
+    }
+
+    switch ($('body').attr('class').split(" ")[0]) {
+        case 'news_list':
+            initNewsList();
+            break;
+        case 'news_detail':
+            initNewsDetails();
+            break;
+        case 'home':
+            initHome();
+            break;
+        case 'store_list':
+            initStorelist();
+            break;
+        case 'search':
+            initSearch();
+            break;
+        case 'contactus':
+            initContact();
+            break;
+        case 'services':
+            initServices();
+            break;
+        case 'movie_list':
+            initMovieList();
+            break;
+        case 'lottery':
+            initLottery();
+            break;
+    };
+
+    var $newsletterModal = $('#newsletterModal');
+    var nlModalSending = false;
+    $('#btnHomeAddToNewsletter').on('click', function(){
+        if (nlModalSending) {
+            return;
+        };
+
+        var data = {
+            name: $('#nameHomeNl', $newsletterModal).val(),
+            lastname: $('#lastnameHomeNl', $newsletterModal).val(),
+            email: $('#emailHomeNl', $newsletterModal).val(),
+            ci: $('#ciHomeNl', $newsletterModal).val(),
+            recaptcha: $('#g-recaptcha-response').val()
+        };
+
+        if (typeof (grecaptcha) != "undefined") {
+            reloadRecaptcha(function(){
+                data.recaptcha = $('#g-recaptcha-response').val();
+                sendHomeNewsletterModalFormInfo(data)
+            });
+        } else {
+            sendHomeNewsletterModalFormInfo(data);
+        }
+    });
+
+    function sendHomeNewsletterModalFormInfo(data){
+        $.ajax({
+            type: "POST",
+            url: webPath + 'api/web/subscribe/',
+            data: data,
+            dataType: "json",
+            beforeSend: function () {
+                nlModalSending = true;
+                $('.warning', $newsletterModal).removeClass('warning');
+                $('#btnHomeAddToNewsletter span:first', $newsletterModal).text("ENVIANDO");
+            },
+            success: function (json) {
+                nlModalSending = false;
+                if (json.status) {
+                    $newsletterModal.addClass('success');
+                    resetHomeNewsletterFrm();
+                } else {
+                    if (typeof (json.nodes) != "undefined") {
+                        if (json.nodes.length > 0) {
+                            for (var i = 0; i < json.nodes.length; i++) {
+                                $(json.nodes[i], $newsletterModal).parents('.row:first').addClass('warning');
+                            }
+                        }
+                    }
+                    $('#btnHomeAddToNewsletter span:first', $newsletterModal).text("REINTENTAR");
+                }
+            }, error: function () {
+                nlModalSending = false;
+                $('#btnHomeAddToNewsletter span:first', $newsletterModal).text("ERROR");
+            }
+        });
+
+        function resetHomeNewsletterFrm(){
+            $('#nameHomeNl', $newsletterModal).val("");
+            $('#lastnameHomeNl', $newsletterModal).val("");
+            $('#emailHomeNl', $newsletterModal).val("");
+            $('#ciHomeNl', $newsletterModal).val("");
+            $('#btnHomeAddToNewsletter span:first', $newsletterModal).text("SUMARME");
+        };
+
+
+    }
+}
+function stopVerticalLocomotive(){
+    scroller.destroy();
+}
+function startVerticalLocomotive(){
+    scroller = new LocomotiveScroll({
+        el: document.querySelector("[data-scroll-container]"),
+        smooth: true,
+        smoothMobile: true
+
+    });
+    scroller.on("call", scrollInSection);
+}
